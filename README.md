@@ -1,54 +1,55 @@
 # oneshotsx 🚀
-> The All-in-One Autonomous SDK for Devs & Vibe Coders.
+> The Agentic Standard Library. A lightweight, autonomous SDK for developers and agents.
 
-`oneshotsx` is the "one-shot" solution to software development. Whether you're on a high-end PC or an Android phone, `oneshotsx` gives you the power to build, research, secure, and deploy entire applications with a single command or function call.
+`oneshotsx` provides the "One-Shot" primitives required to build autonomous systems, automate complex repo tasks, and bridge the gap between AI brains and real-world actions.
 
-## ✨ Capabilities
-- 🧠 **Autonomous Orchestration:** Decomposes complex intents into execution plans.
-- 🔍 **Deep Search:** Parallel real-time research across X, Reddit, and the Web.
-- 🛠️ **Auto-Synthesis:** Generates production-ready code, handles dependencies, and self-heals.
-- 🛡️ **Zero-Debt Security:** Automatic vulnerability scanning and code verification.
-- 🌐 **Universal Deploy:** Abstracted deployment to Vercel, AWS, Cloudflare, and more.
-- 📱 **Mobile Optimized:** Lightweight client-side footprint, heavy lifting in the cloud.
+## 📦 Features
+- **osx.core**: Self-healing execution engine with automatic retries and deep logging.
+- **osx.shell**: Secure, captured terminal execution with error analysis.
+- **osx.fs**: Intelligent file system operations (Search, Patch, Write).
+- **osx.search**: Multi-platform deep research orchestrator.
+- **osx.agent**: Universal connector to expose tools to LLMs (OpenRouter, OpenAI, etc.).
 
-## 🏗️ Structure
-```text
-oneshotsx/
-├── sdk/                # Core SDK Logic (Node.js/TS)
-│   ├── intent/         # Natural language processing
-│   ├── search/         # Deep research modules
-│   ├── synth/          # Code generation & self-healing
-│   └── deploy/         # Multi-provider deployment
-├── dashboard/          # Next.js Management Interface
-└── cli/                # Command-line interface
-```
-
-## 🚀 Use Cases
-### For Vibe Coders
-> "I have an idea for a decentralized voting app. Build it and deploy it to Vercel."
-- **How:** Simply use the dashboard or the `osx.solve()` method. `oneshotsx` handles the architecture, coding, and infrastructure.
-
-### For Developers
-> "My Next.js app has a memory leak in the dashboard component. Find it and fix it."
-- **How:** Import `oneshotsx` into your CI/CD or run it via CLI. It will research the leak, analyze your code, and propose a PR.
-
-## 💻 Platform Compatibility
-- **Environment:** Node.js, Bun, Deno, Next.js.
-- **Hosting:** Vercel, Netlify, AWS, GCP, Azure, Fly.io, Railway.
-- **Models:** Compatible with Claude 3.5, GPT-4o, Llama 3.1, Grok, and more.
-
-## 🛠️ Installation
+## 🚀 Installation
 ```bash
 npm install oneshotsx
 ```
 
-## 📖 Basic Usage
-```javascript
-const { osx } = require('oneshotsx');
+## 📖 Usage
 
-osx.solve({
-  intent: "Build a secure landing page for a SaaS startup",
-  output: "./my-saas",
-  deploy: "vercel"
-});
+### As an Autonomous Toolbelt
+```typescript
+import { osx } from 'oneshotsx';
+
+async function fixBug() {
+  // One-shot shell execution
+  const res = await osx.shell.run('npm test');
+
+  if (!res.success) {
+    // Perform deep research on the error
+    const research = await osx.search.deep(res.error);
+
+    // Patch the file autonomously
+    await osx.fs.patch('src/index.ts', 'oldBuggyCode', 'newFixedCode');
+  }
+}
 ```
+
+### Powering an AI Agent
+```typescript
+import { OneShotSX } from 'oneshotsx';
+
+const osx = new OneShotSX({ apiKey: 'YOUR_OPENROUTER_KEY' });
+
+// Get standard tool definitions for your LLM
+const tools = osx.agent.getToolDefinitions();
+
+// Let the agent solve a problem in one shot
+const result = await osx.solve("Fix the memory leak in the dashboard");
+```
+
+## 📱 Mobile & Lightweight
+Designed to run anywhere Node.js runs—including Termux on Android, CI/CD runners, and edge workers.
+
+## 📄 License
+MIT
