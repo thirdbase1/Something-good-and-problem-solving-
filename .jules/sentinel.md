@@ -1,0 +1,4 @@
+## 2026-04-19 - [Fix path traversal vulnerability in autonomous toolbelt]
+**Vulnerability:** The Agentic Standard Library `FileTool` provided raw file system access (read, write, patch) using direct user/agent input for paths (`fs.readFile(path)`, etc.), enabling operations outside the project workspace (e.g., `../../../etc/passwd`).
+**Learning:** In autonomous/agentic SDKs, tools that directly interact with the host system without sandboxing or path validation expose massive blast radii. If an LLM halllucinates or gets compromised via prompt injection, it could compromise the entire host machine by reading secrets or overwriting sensitive configuration files outside of its intended workspace.
+**Prevention:** Implement path validation checks before any FS operations. Use `path.resolve(process.cwd(), targetPath)` and ensure the absolute path `startsWith(process.cwd())`. Throw a security exception if a path boundary violation is detected.
