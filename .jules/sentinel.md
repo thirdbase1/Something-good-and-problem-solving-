@@ -1,0 +1,4 @@
+## 2026-04-20 - [CRITICAL] Fixed Path Traversal in FileTool
+**Vulnerability:** The FileTool's `read`, `write`, and `patch` methods accepted any string as a file path. This allowed reading sensitive files outside the project directory using arbitrary relative paths (e.g., `../../../../etc/passwd`).
+**Learning:** Tools exposed to agents must enforce strict boundaries. Even if the SDK runs in a simulated or containerized environment, local file operations must be restricted to the project root (`process.cwd()`) to prevent accidental or malicious agent behavior from escaping the sandbox.
+**Prevention:** Implement a central sanitization function (`sanitizePath`) that resolves input paths against `process.cwd()` and verifies that the resulting absolute path starts with `process.cwd()`. Apply this to all file system operations.
