@@ -37,6 +37,7 @@ exports.SearchTool = exports.FileTool = exports.ShellTool = void 0;
 const child_process_1 = require("child_process");
 const util_1 = require("util");
 const fs = __importStar(require("fs/promises"));
+const path = __importStar(require("path"));
 const execAsync = (0, util_1.promisify)(child_process_1.exec);
 class ShellTool {
     constructor(core) {
@@ -55,23 +56,31 @@ class FileTool {
     constructor(core) {
         this.core = core;
     }
-    async read(path) {
-        this.core.log(`Reading file: ${path}`);
-        return this.core.execute(() => fs.readFile(path, 'utf-8'));
+    sanitizePath(unsafePath) {
+        const resolvedPath = path.resolve(process.cwd(), unsafePath);
+        if (resolvedPath !== process.cwd() && !resolvedPath.startsWith(process.cwd() + path.sep)) {
+            throw new Error(`Security Error: Path traversal attempt blocked for ${unsafePath}`);
+        }
+        return resolvedPath;
     }
-    async write(path, content) {
-        this.core.log(`Writing file: ${path}`);
-        return this.core.execute(() => fs.writeFile(path, content));
+    async read(filePath) {
+        this.core.log(`Reading file: ${filePath}`);
+        return this.core.execute(() => fs.readFile(this.sanitizePath(filePath), 'utf-8'));
     }
-    async patch(path, search, replace) {
-        this.core.log(`Patching file: ${path}`);
+    async write(filePath, content) {
+        this.core.log(`Writing file: ${filePath}`);
+        return this.core.execute(() => fs.writeFile(this.sanitizePath(filePath), content));
+    }
+    async patch(filePath, search, replace) {
+        this.core.log(`Patching file: ${filePath}`);
         return this.core.execute(async () => {
-            const content = await fs.readFile(path, 'utf-8');
+            const safePath = this.sanitizePath(filePath);
+            const content = await fs.readFile(safePath, 'utf-8');
             const newContent = content.replace(search, replace);
             if (content === newContent) {
-                throw new Error(`Search string not found in ${path}`);
+                throw new Error(`Search string not found in ${filePath}`);
             }
-            await fs.writeFile(path, newContent);
+            await fs.writeFile(safePath, newContent);
         });
     }
 }
