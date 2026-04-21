@@ -1,0 +1,4 @@
+## 2026-04-21 - [Path Traversal in FileTool]
+**Vulnerability:** The SDK's `FileTool` allowed unrestricted file system access because the provided file paths were not sanitized or checked against the current working directory boundary. This could lead to a path traversal attack where an attacker could read, write, or patch arbitrary files on the system outside the intended `process.cwd()` scope.
+**Learning:** File system abstractions built for agentic execution need strict constraints to ensure agents (or malicious inputs) cannot traverse out of the operational sandbox. Even basic read/write wrappers must implement explicit path validation.
+**Prevention:** Always use `path.resolve(process.cwd(), inputPath)` and verify that the resulting absolute path starts with `process.cwd()` before allowing any filesystem operations.
