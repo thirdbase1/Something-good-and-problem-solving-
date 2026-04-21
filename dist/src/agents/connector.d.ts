@@ -7,6 +7,7 @@ export interface ToolDefinition {
 export declare class AgentConnector {
     private core;
     private config;
+    private static readonly TOOL_DEFINITIONS;
     constructor(core: CoreEngine, config?: {
         provider?: string;
         apiKey?: string;
