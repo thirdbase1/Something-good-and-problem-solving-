@@ -10,9 +10,10 @@ export declare class ShellTool {
 export declare class FileTool {
     private core;
     constructor(core: CoreEngine);
-    read(path: string): Promise<ExecutionResult<string>>;
-    write(path: string, content: string): Promise<ExecutionResult<void>>;
-    patch(path: string, search: string, replace: string): Promise<ExecutionResult<void>>;
+    private resolveSecurePath;
+    read(filePath: string): Promise<ExecutionResult<string>>;
+    write(filePath: string, content: string): Promise<ExecutionResult<void>>;
+    patch(filePath: string, search: string, replace: string): Promise<ExecutionResult<void>>;
 }
 export declare class SearchTool {
     private core;
