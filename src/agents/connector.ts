@@ -1,4 +1,5 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
+import * as https from 'https';
 import { CoreEngine } from '../core/engine';
 
 export interface ToolDefinition {
@@ -8,7 +9,15 @@ export interface ToolDefinition {
 }
 
 export class AgentConnector {
-    constructor(private core: CoreEngine, private config: { provider?: string; apiKey?: string } = {}) {}
+    private client: AxiosInstance;
+
+    constructor(private core: CoreEngine, private config: { provider?: string; apiKey?: string } = {}) {
+        // Optimization: Use HTTP Keep-Alive to reuse TCP connections for API calls.
+        // This eliminates TLS handshake latency (~100-300ms) on subsequent LLM requests.
+        this.client = axios.create({
+            httpsAgent: new https.Agent({ keepAlive: true })
+        });
+    }
 
     /**
      * Standard protocol to expose oneshotsx tools to any LLM
@@ -41,7 +50,7 @@ export class AgentConnector {
         }
 
         try {
-            const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+            const response = await this.client.post('https://openrouter.ai/api/v1/chat/completions', {
                 model: 'meta-llama/llama-3.1-70b-instruct',
                 messages: [{ role: 'user', content: message }]
             }, {
