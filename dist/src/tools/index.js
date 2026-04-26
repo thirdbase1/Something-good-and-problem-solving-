@@ -37,6 +37,7 @@ exports.SearchTool = exports.FileTool = exports.ShellTool = void 0;
 const child_process_1 = require("child_process");
 const util_1 = require("util");
 const fs = __importStar(require("fs/promises"));
+const path = __importStar(require("path"));
 const execAsync = (0, util_1.promisify)(child_process_1.exec);
 class ShellTool {
     constructor(core) {
@@ -55,23 +56,38 @@ class FileTool {
     constructor(core) {
         this.core = core;
     }
-    async read(path) {
-        this.core.log(`Reading file: ${path}`);
-        return this.core.execute(() => fs.readFile(path, 'utf-8'));
+    sanitizePath(inputPath) {
+        const cwd = process.cwd();
+        const resolvedPath = path.resolve(cwd, inputPath);
+        if (resolvedPath !== cwd && !resolvedPath.startsWith(cwd + path.sep)) {
+            throw new Error(`Security Error: Path traversal detected. Access to ${inputPath} denied.`);
+        }
+        return resolvedPath;
     }
-    async write(path, content) {
-        this.core.log(`Writing file: ${path}`);
-        return this.core.execute(() => fs.writeFile(path, content));
+    async read(inputPath) {
+        this.core.log(`Reading file: ${inputPath}`);
+        return this.core.execute(() => {
+            const securePath = this.sanitizePath(inputPath);
+            return fs.readFile(securePath, 'utf-8');
+        });
     }
-    async patch(path, search, replace) {
-        this.core.log(`Patching file: ${path}`);
+    async write(inputPath, content) {
+        this.core.log(`Writing file: ${inputPath}`);
+        return this.core.execute(() => {
+            const securePath = this.sanitizePath(inputPath);
+            return fs.writeFile(securePath, content);
+        });
+    }
+    async patch(inputPath, search, replace) {
+        this.core.log(`Patching file: ${inputPath}`);
         return this.core.execute(async () => {
-            const content = await fs.readFile(path, 'utf-8');
+            const securePath = this.sanitizePath(inputPath);
+            const content = await fs.readFile(securePath, 'utf-8');
             const newContent = content.replace(search, replace);
             if (content === newContent) {
-                throw new Error(`Search string not found in ${path}`);
+                throw new Error(`Search string not found in ${inputPath}`);
             }
-            await fs.writeFile(path, newContent);
+            await fs.writeFile(securePath, newContent);
         });
     }
 }
