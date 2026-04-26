@@ -23,4 +23,16 @@ describe('OneShotSX SDK', () => {
         expect(readRes.success).toBe(true);
         expect(readRes.data).toBe(content);
     });
+    test('File tool prevents path traversal', async () => {
+        const maliciousPath = '../../../etc/passwd';
+        const readRes = await osx.fs.read(maliciousPath);
+        expect(readRes.success).toBe(false);
+        expect(readRes.error).toContain('Security Error: Path traversal detected.');
+        const writeRes = await osx.fs.write(maliciousPath, 'hacked');
+        expect(writeRes.success).toBe(false);
+        expect(writeRes.error).toContain('Security Error: Path traversal detected.');
+        const patchRes = await osx.fs.patch(maliciousPath, 'search', 'replace');
+        expect(patchRes.success).toBe(false);
+        expect(patchRes.error).toContain('Security Error: Path traversal detected.');
+    });
 });
