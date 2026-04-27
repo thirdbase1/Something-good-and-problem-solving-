@@ -1,0 +1,3 @@
+## 2026-04-27 - Add HTTP Keep-Alive to Agent Connector
+**Learning:** Frequent API calls to LLM providers using standard Axios instantiate new HTTP/HTTPS connections per request. This means repeating DNS, TCP handshakes, and TLS negotiation overheads repeatedly, adding measurable latency (often 50ms-200ms per request).
+**Action:** By passing `httpAgent` and `httpsAgent` instances with `{ keepAlive: true }` to `axios.create()`, the underlying TCP connections are kept open for subsequent requests. This is a critical pattern when making multiple sequential API calls to the same endpoint, optimizing agent-LLM conversation loops.
