@@ -14,23 +14,7 @@ class AgentConnector {
      * Standard protocol to expose oneshotsx tools to any LLM
      */
     getToolDefinitions() {
-        return [
-            {
-                name: "osx_shell_run",
-                description: "Run a secure shell command and get output",
-                parameters: { command: "string" }
-            },
-            {
-                name: "osx_fs_patch",
-                description: "Patch a file with search/replace strings",
-                parameters: { path: "string", search: "string", replace: "string" }
-            },
-            {
-                name: "osx_search_deep",
-                description: "Perform deep research across multiple platforms",
-                parameters: { query: "string" }
-            }
-        ];
+        return AgentConnector.TOOL_DEFINITIONS;
     }
     async chat(message) {
         this.core.log(`Agent received message: ${message}`);
@@ -53,3 +37,23 @@ class AgentConnector {
     }
 }
 exports.AgentConnector = AgentConnector;
+// ⚡ Bolt: Cache tool definitions statically to prevent recreating the array
+// and objects on every single getToolDefinitions() call, reducing memory
+// allocations and garbage collection overhead on hot paths.
+AgentConnector.TOOL_DEFINITIONS = [
+    {
+        name: "osx_shell_run",
+        description: "Run a secure shell command and get output",
+        parameters: { command: "string" }
+    },
+    {
+        name: "osx_fs_patch",
+        description: "Patch a file with search/replace strings",
+        parameters: { path: "string", search: "string", replace: "string" }
+    },
+    {
+        name: "osx_search_deep",
+        description: "Perform deep research across multiple platforms",
+        parameters: { query: "string" }
+    }
+];
