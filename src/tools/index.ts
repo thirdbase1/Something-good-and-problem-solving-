@@ -22,8 +22,10 @@ export class FileTool {
     constructor(private core: CoreEngine) {}
 
     private resolveAndValidatePath(unsafePath: string): string {
-        const resolvedPath = path.resolve(process.cwd(), unsafePath);
-        if (!resolvedPath.startsWith(process.cwd() + path.sep) && resolvedPath !== process.cwd()) {
+        // Optimize repeated native OS calls to process.cwd() by caching its result
+        const cwd = process.cwd();
+        const resolvedPath = path.resolve(cwd, unsafePath);
+        if (!resolvedPath.startsWith(cwd + path.sep) && resolvedPath !== cwd) {
             throw new Error('Access denied: Invalid path');
         }
         return resolvedPath;
