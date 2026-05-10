@@ -14,8 +14,11 @@ export class AgentConnector {
     constructor(private core: CoreEngine, private config: { provider?: string; apiKey?: string } = {}) {
         // Optimize repeated API calls by enabling keep-alive for HTTP/HTTPS connections.
         // This avoids expensive TCP/TLS handshakes (~100-200ms per request) on consecutive LLM calls.
+        // SECURITY: Apply resource boundaries to prevent DoS via external network request exhaustion.
         this.client = axios.create({
-            httpsAgent: new https.Agent({ keepAlive: true })
+            httpsAgent: new https.Agent({ keepAlive: true }),
+            timeout: 30000,
+            maxContentLength: 5 * 1024 * 1024
         });
     }
 
