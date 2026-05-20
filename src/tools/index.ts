@@ -60,14 +60,23 @@ export class FileTool {
 }
 
 export class SearchTool {
+    // Cache for expensive search operations (often requested repeatedly during planning phases)
+    private cache: Map<string, any> = new Map();
+
     constructor(private core: CoreEngine) {}
 
     async deep(query: string): Promise<ExecutionResult<any>> {
+        // Return from cache if available to save time and API costs
+        if (this.cache.has(query)) {
+            this.core.log(`Cache hit for search query: ${query}`);
+            return this.core.execute(async () => this.cache.get(query));
+        }
+
         this.core.log(`Initiating deep search for: ${query}`);
         // This is where real API calls to Google/X/Reddit would go
         return this.core.execute(async () => {
             // Simulated results for the SDK base
-            return {
+            const result = {
                 query,
                 timestamp: new Date().toISOString(),
                 findings: [
@@ -75,6 +84,9 @@ export class SearchTool {
                     "Trending solutions in 2026"
                 ]
             };
+
+            this.cache.set(query, result);
+            return result;
         });
     }
 }
