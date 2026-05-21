@@ -2,3 +2,7 @@
 **Vulnerability:** The `FileTool` operations (`read`, `write`, `patch`) allowed arbitrary file system access because user-provided paths were used directly without sanitization, exposing a path traversal risk.
 **Learning:** File path inputs to SDK operations must be properly resolved and validated to prevent unauthorized access outside the intended working directory. Unrestricted access breaks the security boundaries of an agentic execution environment.
 **Prevention:** Always use `path.resolve(process.cwd(), unsafePath)` and verify that the resulting absolute path begins with `process.cwd()`. Implement secure failure paths and never expose raw internal file structures on error.
+## 2026-05-21 - Denial of Service (DoS) Risk in Unbounded Agentic Operations
+**Vulnerability:** The `ShellTool` and `AgentConnector` lacked execution and network boundaries (timeouts, buffer limits). An agent could execute shell commands that hang indefinitely or output excessive data, or make network requests that hang, exhausting system resources.
+**Learning:** Agentic operations must operate within strict boundaries. Since agents operate autonomously, unbounded operations can lead to resource exhaustion (DoS) when agents inadvertently trigger infinite loops, enormous outputs, or unresponsive network endpoints.
+**Prevention:** Always enforce strict boundaries on external interactions. Apply `timeout` and `maxBuffer` to shell executions (e.g., via `execAsync`), and configure network request timeouts (e.g., in Axios) to ensure resources are predictably released.
