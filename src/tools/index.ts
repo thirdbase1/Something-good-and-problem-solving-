@@ -60,12 +60,22 @@ export class FileTool {
 }
 
 export class SearchTool {
+    // ⚡ Bolt Optimization: Cache identical search queries
+    // Agentic loops often repeat the same expensive queries during planning phases.
+    // Caching results in memory prevents redundant API calls and eliminates this bottleneck.
+    private cache = new Map<string, ExecutionResult<any>>();
+
     constructor(private core: CoreEngine) {}
 
     async deep(query: string): Promise<ExecutionResult<any>> {
+        if (this.cache.has(query)) {
+            this.core.log(`Cache hit for deep search: ${query}`);
+            return this.cache.get(query)!;
+        }
+
         this.core.log(`Initiating deep search for: ${query}`);
         // This is where real API calls to Google/X/Reddit would go
-        return this.core.execute(async () => {
+        const result = await this.core.execute(async () => {
             // Simulated results for the SDK base
             return {
                 query,
@@ -76,5 +86,11 @@ export class SearchTool {
                 ]
             };
         });
+
+        if (result.success) {
+            this.cache.set(query, result);
+        }
+
+        return result;
     }
 }
