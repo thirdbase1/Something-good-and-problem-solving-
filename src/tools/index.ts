@@ -60,14 +60,23 @@ export class FileTool {
 }
 
 export class SearchTool {
+    // Cache to prevent redundant, expensive API calls during agentic loops
+    private cache = new Map<string, any>();
+
     constructor(private core: CoreEngine) {}
 
     async deep(query: string): Promise<ExecutionResult<any>> {
         this.core.log(`Initiating deep search for: ${query}`);
-        // This is where real API calls to Google/X/Reddit would go
         return this.core.execute(async () => {
+            // Return identical query results instantly from cache
+            if (this.cache.has(query)) {
+                this.core.log(`Cache hit for deep search: ${query}`);
+                return this.cache.get(query);
+            }
+
+            // This is where real API calls to Google/X/Reddit would go
             // Simulated results for the SDK base
-            return {
+            const result = {
                 query,
                 timestamp: new Date().toISOString(),
                 findings: [
@@ -75,6 +84,8 @@ export class SearchTool {
                     "Trending solutions in 2026"
                 ]
             };
+            this.cache.set(query, result);
+            return result;
         });
     }
 }
