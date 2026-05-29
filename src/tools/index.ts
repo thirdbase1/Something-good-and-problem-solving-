@@ -12,7 +12,11 @@ export class ShellTool {
     async run(command: string): Promise<ExecutionResult<{ stdout: string; stderr: string }>> {
         this.core.log(`Executing shell command: ${command}`);
         return this.core.execute(async () => {
-            const { stdout, stderr } = await execAsync(command);
+            // Add a 30s timeout and 2MB buffer limit to prevent DoS / resource exhaustion
+            const { stdout, stderr } = await execAsync(command, {
+                timeout: 30000,
+                maxBuffer: 2 * 1024 * 1024
+            });
             return { stdout, stderr };
         });
     }
