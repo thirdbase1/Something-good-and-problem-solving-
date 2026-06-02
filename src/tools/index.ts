@@ -60,14 +60,22 @@ export class FileTool {
 }
 
 export class SearchTool {
+    // ⚡ Bolt: Cache search results to prevent redundant agentic queries and save time/resources
+    private cache = new Map<string, any>();
+
     constructor(private core: CoreEngine) {}
 
     async deep(query: string): Promise<ExecutionResult<any>> {
         this.core.log(`Initiating deep search for: ${query}`);
         // This is where real API calls to Google/X/Reddit would go
         return this.core.execute(async () => {
+            if (this.cache.has(query)) {
+                this.core.log(`⚡ Bolt: Returning cached result for query: ${query}`);
+                return this.cache.get(query);
+            }
+
             // Simulated results for the SDK base
-            return {
+            const result = {
                 query,
                 timestamp: new Date().toISOString(),
                 findings: [
@@ -75,6 +83,8 @@ export class SearchTool {
                     "Trending solutions in 2026"
                 ]
             };
+            this.cache.set(query, result);
+            return result;
         });
     }
 }
