@@ -54,7 +54,8 @@ export class AgentConnector {
                 model: 'meta-llama/llama-3.1-70b-instruct',
                 messages: [{ role: 'user', content: message }]
             }, {
-                headers: { 'Authorization': `Bearer ${this.config.apiKey}` }
+                headers: { 'Authorization': `Bearer ${this.config.apiKey}` },
+                timeout: 30000 // Prevent network connections from hanging indefinitely
             });
             return response.data.choices[0].message.content;
         } catch (err: any) {
