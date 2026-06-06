@@ -2,3 +2,7 @@
 **Vulnerability:** The `FileTool` operations (`read`, `write`, `patch`) allowed arbitrary file system access because user-provided paths were used directly without sanitization, exposing a path traversal risk.
 **Learning:** File path inputs to SDK operations must be properly resolved and validated to prevent unauthorized access outside the intended working directory. Unrestricted access breaks the security boundaries of an agentic execution environment.
 **Prevention:** Always use `path.resolve(process.cwd(), unsafePath)` and verify that the resulting absolute path begins with `process.cwd()`. Implement secure failure paths and never expose raw internal file structures on error.
+## 2026-04-28 - Missing External I/O Boundaries (Denial of Service Risk)
+**Vulnerability:** External network requests (`AgentConnector`) and shell command executions (`ShellTool`) lacked explicit execution timeouts and buffer/content length limits. This could allow hanging external services or intentionally large payloads to exhaust system resources, leading to a Denial of Service (DoS).
+**Learning:** Agentic systems that execute arbitrary commands or connect to external APIs must operate within strict boundaries. Default tool behavior (like infinite timeouts) can be easily exploited or inadvertently cause cascading failures if an external dependency hangs.
+**Prevention:** Always configure `timeout` (e.g., 30s) and buffer size limits (e.g., 1MB) on `axios.create` instances and `child_process.exec` calls to enforce strict resource boundaries and fail securely.
