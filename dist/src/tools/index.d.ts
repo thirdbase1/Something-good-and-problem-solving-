@@ -17,6 +17,7 @@ export declare class FileTool {
 }
 export declare class SearchTool {
     private core;
+    private cache;
     constructor(core: CoreEngine);
     deep(query: string): Promise<ExecutionResult<any>>;
 }

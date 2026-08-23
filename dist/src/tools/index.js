@@ -98,13 +98,20 @@ exports.FileTool = FileTool;
 class SearchTool {
     constructor(core) {
         this.core = core;
+        // Cache to prevent redundant external search queries in agentic loops,
+        // reducing bottlenecks and improving performance.
+        this.cache = new Map();
     }
     async deep(query) {
         this.core.log(`Initiating deep search for: ${query}`);
-        // This is where real API calls to Google/X/Reddit would go
         return this.core.execute(async () => {
+            if (this.cache.has(query)) {
+                this.core.log(`Cache hit for query: ${query}`);
+                return this.cache.get(query);
+            }
+            // This is where real API calls to Google/X/Reddit would go
             // Simulated results for the SDK base
-            return {
+            const result = {
                 query,
                 timestamp: new Date().toISOString(),
                 findings: [
@@ -112,6 +119,8 @@ class SearchTool {
                     "Trending solutions in 2026"
                 ]
             };
+            this.cache.set(query, result);
+            return result;
         });
     }
 }
