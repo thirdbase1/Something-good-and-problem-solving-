@@ -1,45 +1,90 @@
-export interface ExecutionResult<T = any> {
-    success: boolean;
-    data?: T;
-    error?: string;
-    logs: string[];
+export interface ExecutionResult<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  logs: string[];
+  attempts: number;
+}
+
+export interface CoreEngineOptions {
+  /** Default number of retries for failed actions (default: 2) */
+  defaultRetries?: number;
+  /** Prefix for log messages */
+  logPrefix?: string;
 }
 
 export class CoreEngine {
-    private logs: string[] = [];
+  private logs: string[] = [];
+  private readonly defaultRetries: number;
+  private readonly logPrefix: string;
 
-    async execute<T>(action: () => Promise<T>, options: { retries?: number } = {}): Promise<ExecutionResult<T>> {
-        const retries = options.retries ?? 2;
-        let attempt = 0;
+  constructor(options: CoreEngineOptions = {}) {
+    this.defaultRetries = options.defaultRetries ?? 2;
+    this.logPrefix = options.logPrefix ?? '[osx]';
+  }
 
-        while (attempt <= retries) {
-            try {
-                const data = await action();
-                return { success: true, data, logs: this.logs };
-            } catch (err: any) {
-                attempt++;
-                this.log(`Attempt ${attempt} failed: ${err.message}`);
+  /**
+   * Execute an async action with automatic retries and structured result.
+   */
+  async execute<T>(
+    action: () => Promise<T>,
+    options: { retries?: number; label?: string } = {}
+  ): Promise<ExecutionResult<T>> {
+    const retries = options.retries ?? this.defaultRetries;
+    const label = options.label ?? 'action';
+    let attempt = 0;
 
-                if (attempt > retries) {
-                    return { success: false, error: err.message, logs: this.logs };
-                }
+    while (attempt <= retries) {
+      try {
+        const data = await action();
+        return {
+          success: true,
+          data,
+          logs: [...this.logs],
+          attempts: attempt + 1,
+        };
+      } catch (err: unknown) {
+        attempt++;
+        const message = err instanceof Error ? err.message : String(err);
+        this.log(`${label} attempt ${attempt} failed: ${message}`);
 
-                // Self-healing: In a real implementation, we could analyze the error here
-                this.log(`Analyzing error for self-healing...`);
-                await new Promise(resolve => setTimeout(resolve, 500)); // Cool down
-            }
+        if (attempt > retries) {
+          return {
+            success: false,
+            error: message,
+            logs: [...this.logs],
+            attempts: attempt,
+          };
         }
 
-        return { success: false, error: "Unknown error", logs: this.logs };
+        // Brief cool-down before retry (self-healing window)
+        this.log(`Self-healing analysis for ${label}...`);
+        await new Promise((resolve) => setTimeout(resolve, 300 * attempt));
+      }
     }
 
-    log(message: string) {
-        const entry = `[${new Date().toISOString()}] ${message}`;
-        console.log(entry);
-        this.logs.push(entry);
-    }
+    return {
+      success: false,
+      error: 'Unknown error after retries',
+      logs: [...this.logs],
+      attempts: attempt,
+    };
+  }
 
-    getLogs() {
-        return this.logs;
+  log(message: string): void {
+    const entry = `${this.logPrefix} [${new Date().toISOString()}] ${message}`;
+    // Keep console output for interactive use; suppress in pure library mode if needed
+    if (process.env.OSX_SILENT !== '1') {
+      console.log(entry);
     }
+    this.logs.push(entry);
+  }
+
+  getLogs(): string[] {
+    return [...this.logs];
+  }
+
+  clearLogs(): void {
+    this.logs = [];
+  }
 }
